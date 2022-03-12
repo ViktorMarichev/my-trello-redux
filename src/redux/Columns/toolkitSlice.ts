@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { Column, Card as CardType } from '../../types/tasks';
+import { Column } from '../../types/tasks';
 import { stateTool } from '../index';
 
 const _ = require('lodash');
@@ -21,17 +21,10 @@ const ColumnsSlice = createSlice({
   ],
   reducers: {
     addCard(state: Array<Column>, action) {
-      console.log(state, action);
       const cardId: string = stateTool.generateId(state)!;
-
       state[_.findIndex(state, { id: action.payload.columnId })].cards.push(cardId);
-      action.payload.addCardToCards({
-        id: cardId,
-        title: action.payload.title,
-        author: action.payload.author,
-        description: '',
-        comments: [],
-      } as CardType);
+      console.log(state[_.findIndex(state, { id: action.payload.columnId })].cards);
+      action.payload.cardId = cardId;
     },
   },
 });

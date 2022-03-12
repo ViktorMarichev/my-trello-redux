@@ -6,8 +6,9 @@ import { ActionType } from '../types/actionTypes';
 import plus from '../img/plus.svg';
 import cross from '../img/cross.svg';
 import { addCard } from '../redux/Columns/index';
-import { CardSelectors, addCard as addCardToCards } from '../redux/Card/index';
+import { CardSelectors } from '../redux/Card/index';
 import { Form, Field } from 'react-final-form';
+import Card from './Card';
 
 const StyledColumn = styled.div`
   border-radius: 15px;
@@ -156,7 +157,6 @@ type ColumnProps = {
 function Column(props: ColumnProps) {
   const [iSaddedTo, setIsAddedTo] = useState<boolean>(false);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-
   function resize(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     setTimeout(function () {
       textAreaRef.current!.style.cssText = 'height:auto; padding:1';
@@ -184,7 +184,7 @@ function Column(props: ColumnProps) {
       </TitleWrapper>
       <CardList>
         {props.cards.map((elem: cardType) => {
-          return <div key={elem.id}>{elem.title}</div>;
+          return <Card key={elem.id} card={elem} />;
         })}
       </CardList>
       {!iSaddedTo ? (
@@ -242,22 +242,18 @@ type ownPropsType = {
 const mapStateToProps = (state: any, ownProps: ownPropsType) => {
   return {
     user: state.user,
-    cards: CardSelectors.getCardsByIds(ownProps.cardsIds, state),
+    cards: CardSelectors.getCardsByIds(state.cards, ownProps.cardsIds),
   };
 };
 
 const mapDispatchToProps = (dispatch: (action: ActionType) => void) => {
   return {
     addCardButtonHandler: (columnId: string, title: string, author: string) => {
-      const addCardToCardsCallback = (card: cardType) => {
-        dispatch(addCardToCards(card));
-      };
       dispatch(
         addCard({
           columnId,
           title,
           author,
-          addCardToCards: addCardToCardsCallback,
         })
       );
     },

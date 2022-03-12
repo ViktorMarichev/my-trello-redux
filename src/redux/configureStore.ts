@@ -4,9 +4,11 @@ import storage from 'redux-persist/lib/storage';
 import ColumnReducer from './Columns/index';
 import CardReducer from './Card/index';
 import UserReducer from './User/index';
+import CurrentCardReducer from './User/index';
 const rootReducer = combineReducers({
   columns: ColumnReducer,
   cards: CardReducer,
+  currentCard: CurrentCardReducer,
   user: UserReducer,
 });
 const persistConfig = {
