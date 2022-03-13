@@ -9,7 +9,7 @@ import { addCard } from '../redux/Columns/index';
 import { CardSelectors } from '../redux/Card/index';
 import { Form, Field } from 'react-final-form';
 import Card from './Card';
-
+// comment from pc 2
 const StyledColumn = styled.div`
   border-radius: 15px;
   min-width: 273px;
