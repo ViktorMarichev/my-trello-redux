@@ -1,15 +1,114 @@
 import React, { useState, useRef } from 'react';
-import { connect } from 'react-redux';
 import styled from 'styled-components';
-import { Card as cardType, User as UserType } from '../types/tasks';
-import { ActionType } from '../types/actionTypes';
+import { Card as cardType } from '../types/tasks';
 import plus from '../img/plus.svg';
 import cross from '../img/cross.svg';
-import { addCard } from '../redux/Columns/index';
+import { addCard } from '../redux/Card/index';
 import { CardSelectors } from '../redux/Card/index';
 import { Form, Field } from 'react-final-form';
+
+import { useAppDispatch, useAppSelector } from '../redux/configureStore';
 import Card from './Card';
 // comment from pc 2
+
+type ColumnProps = {
+  id: string;
+  title: string;
+};
+
+function Column(props: ColumnProps) {
+  const [iSaddedTo, setIsAddedTo] = useState<boolean>(false);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const dispatch = useAppDispatch();
+  const user: string | null = useAppSelector((state) => state.user.username);
+  const cards: Array<cardType> = useAppSelector((state) =>
+    CardSelectors.getCardsByColumnId(state, props.id)
+  );
+  function resize(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    setTimeout(function () {
+      textAreaRef.current!.style.cssText = 'height:auto; padding:1';
+      textAreaRef.current!.style.cssText = 'height:' + textAreaRef.current!.scrollHeight + 'px';
+    }, 1);
+  }
+
+  type FormType = {
+    title?: string;
+  };
+  const onSubmit = (e: FormType) => {
+    dispatch(
+      addCard({
+        columnId: props.id,
+        title: e.title,
+        author: user,
+      })
+    );
+  };
+  const validate = (e: FormType) => {
+    const errors: FormType = {};
+    if (e.title && e.title.length < 5) errors.title = 'Too short';
+
+    return errors;
+  };
+  return (
+    <StyledColumn>
+      <TitleWrapper>
+        <Title>{props.title}</Title>
+      </TitleWrapper>
+      <CardList>
+        {cards.map((elem: cardType) => {
+          return <Card key={elem.id} card={elem} columnId={props.id} />;
+        })}
+      </CardList>
+      {!iSaddedTo ? (
+        <AddCardWrapper onClick={() => setIsAddedTo(true)}>
+          <AddCardIcon src={plus} />
+          <AddCardText>Add card</AddCardText>
+        </AddCardWrapper>
+      ) : (
+        <AddingACard>
+          <Form
+            onSubmit={onSubmit}
+            validate={validate}
+            render={({ handleSubmit }) => (
+              <form onSubmit={handleSubmit}>
+                <Field
+                  name="title"
+                  render={({ input, meta }) => (
+                    <>
+                      {meta.touched && meta.error && (
+                        <span className="error-message">{meta.error}</span>
+                      )}
+                      <CardTitle
+                        onKeyPress={resize}
+                        ref={textAreaRef}
+                        placeholder="Enter the title"
+                        onChange={input.onChange}
+                        value={input.value}
+                        rows={1}
+                      />
+                    </>
+                  )}
+                />
+
+                <AddingACardButtonWrapper>
+                  <AddingACardButton type="submit">Add card</AddingACardButton>
+                  <CloseButton
+                    src={cross}
+                    onClick={() => {
+                      setIsAddedTo(false);
+                    }}
+                  />
+                </AddingACardButtonWrapper>
+              </form>
+            )}
+          />
+        </AddingACard>
+      )}
+    </StyledColumn>
+  );
+}
+// declare type for state
+
 const StyledColumn = styled.div`
   border-radius: 15px;
   min-width: 273px;
@@ -96,10 +195,10 @@ const AddingACardButton = styled.button`
   align-items: center;
   border: none;
   border-radius: 12px;
-  background-color: #0b97dc; !important;
+  background-color: #0b97dc;
   font-family: 'Comfortaa', cursive;
   font-weight: bold;
-  font-size:15px;
+  font-size: 15px;
   color: white;
   padding: 10px 10px 10px 16px;
   cursor: default;
@@ -111,7 +210,7 @@ const AddingACardButton = styled.button`
   user-select: none;
   margin-right: 5px;
   &:hover {
- background-color:#0a85c2;
+    background-color: #0a85c2;
   }
   &:active {
     box-shadow: 0px 4px 8px rgba(darken(dodgerblue, 30%));
@@ -124,7 +223,7 @@ const AddingACardButtonWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  padding 5px; 2px; 5px; 2px;
+  padding: 5px 2px 5px 2px;
 `;
 
 const CloseButton = styled.img`
@@ -145,118 +244,4 @@ const CardList = styled.div`
   justify-content: flex-start;
   flex-direction: column;
 `;
-type ColumnProps = {
-  id: string;
-  title: string;
-  cardsIds: Array<string>;
-  cards: Array<cardType>;
-  user: UserType;
-  addCardButtonHandler: (columnId: string, title: string, author: string) => void;
-};
-
-function Column(props: ColumnProps) {
-  const [iSaddedTo, setIsAddedTo] = useState<boolean>(false);
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-  function resize(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    setTimeout(function () {
-      textAreaRef.current!.style.cssText = 'height:auto; padding:1';
-      textAreaRef.current!.style.cssText = 'height:' + textAreaRef.current!.scrollHeight + 'px';
-    }, 1);
-  }
-
-  type FormType = {
-    title?: string;
-  };
-  const onSubmit = (e: FormType) => {
-    props.addCardButtonHandler(props.id, e.title!, props.user.username);
-  };
-
-  const validate = (e: FormType) => {
-    const errors: FormType = {};
-    if (e.title && e.title.length < 5) errors.title = 'Too short';
-
-    return errors;
-  };
-  return (
-    <StyledColumn>
-      <TitleWrapper>
-        <Title>{props.title}</Title>
-      </TitleWrapper>
-      <CardList>
-        {props.cards.map((elem: cardType) => {
-          return <Card key={elem.id} card={elem} />;
-        })}
-      </CardList>
-      {!iSaddedTo ? (
-        <AddCardWrapper onClick={() => setIsAddedTo(true)}>
-          <AddCardIcon src={plus} />
-          <AddCardText>Add card</AddCardText>
-        </AddCardWrapper>
-      ) : (
-        <AddingACard>
-          <Form
-            onSubmit={onSubmit}
-            validate={validate}
-            render={({ handleSubmit }) => (
-              <form onSubmit={handleSubmit}>
-                <Field
-                  name="title"
-                  render={({ input, meta }) => (
-                    <>
-                      {meta.touched && meta.error && (
-                        <span className="error-message">{meta.error}</span>
-                      )}
-                      <CardTitle
-                        onKeyPress={resize}
-                        ref={textAreaRef}
-                        placeholder="Enter the title"
-                        onChange={input.onChange}
-                        value={input.value}
-                        rows={1}
-                      />
-                    </>
-                  )}
-                />
-
-                <AddingACardButtonWrapper>
-                  <AddingACardButton type="submit">Add card</AddingACardButton>
-                  <CloseButton
-                    src={cross}
-                    onClick={() => {
-                      setIsAddedTo(false);
-                    }}
-                  />
-                </AddingACardButtonWrapper>
-              </form>
-            )}
-          />
-        </AddingACard>
-      )}
-    </StyledColumn>
-  );
-}
-type ownPropsType = {
-  cardsIds: Array<string>;
-};
-// declare type for state
-const mapStateToProps = (state: any, ownProps: ownPropsType) => {
-  return {
-    user: state.user,
-    cards: CardSelectors.getCardsByIds(state.cards, ownProps.cardsIds),
-  };
-};
-
-const mapDispatchToProps = (dispatch: (action: ActionType) => void) => {
-  return {
-    addCardButtonHandler: (columnId: string, title: string, author: string) => {
-      dispatch(
-        addCard({
-          columnId,
-          title,
-          author,
-        })
-      );
-    },
-  };
-};
-export default connect(mapStateToProps, mapDispatchToProps)(Column);
+export default Column;

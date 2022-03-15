@@ -8,7 +8,119 @@ import dell from '../img/delete.svg';
 import { connect } from 'react-redux';
 import { ActionType } from '../types/actionTypes';
 import { setCurrentCard } from '../redux/CurrentCard/index';
+import { setCardName, deleteCard } from '../redux/Card/index';
+import { CommentSelectors } from '../redux/Comment';
 import { Form, Field } from 'react-final-form';
+import { useAppSelector } from '../redux/configureStore';
+
+type CardProps = {
+  card: CardType;
+  columnId: string;
+  selectCardHandler?: (id: string, columnId: string) => void;
+  deleteCardHandler?: (cardId: string) => void;
+  setCardName?: (id: string, title: string) => void;
+};
+
+function Card(props: CardProps) {
+  const [isChangedCard, setIsChangedCard] = useState<boolean>(false);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const comments = useAppSelector((state) =>
+    CommentSelectors.getCommentsByCardId(state, props.card.id)
+  );
+  type FormType = {
+    title?: string;
+  };
+  function resize(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    setTimeout(function () {
+      textAreaRef.current!.style.cssText = 'height:auto; padding:1';
+      textAreaRef.current!.style.cssText = 'height:' + textAreaRef.current!.scrollHeight + 'px';
+    }, 1);
+  }
+  const onSubmit = (e: FormType) => {
+    props.setCardName!(props.card.id, e.title!);
+    setIsChangedCard(false);
+  };
+
+  const validate = (e: FormType) => {
+    const errors: FormType = {};
+    if (e.title && e.title.length < 5) errors.title = 'Too short';
+
+    return errors;
+  };
+  return (
+    <CardListItem onClick={() => props.selectCardHandler!(props.card.id, props.columnId)}>
+      <EditButtonWrapper
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+          e.stopPropagation();
+          setIsChangedCard(true);
+        }}
+      >
+        <EditButton src={pencil} />
+      </EditButtonWrapper>
+      <DeleteButtonWrapper
+        onClick={(e) => {
+          e.stopPropagation();
+          props.deleteCardHandler!(props.card.id);
+        }}
+      >
+        <DeleteButton src={dell} />
+      </DeleteButtonWrapper>
+      {isChangedCard ? (
+        <Form
+          onSubmit={onSubmit}
+          validate={validate}
+          render={({ handleSubmit }) => (
+            <form onSubmit={handleSubmit}>
+              <TextAreaWrapper>
+                <Field
+                  name="title"
+                  initialValue={props.card.title}
+                  render={({ input, meta }) => (
+                    <>
+                      {meta.touched && meta.error && (
+                        <span className="error-message">{meta.error}</span>
+                      )}
+                      <CardTitleTextArea
+                        ref={textAreaRef}
+                        onKeyPress={resize}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={input.onChange}
+                        value={input.value}
+                        rows={1}
+                      />
+                    </>
+                  )}
+                />
+                <ButtonsWrapper>
+                  <SaveButton
+                    type="submit"
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => e.stopPropagation()}
+                  >
+                    Save title
+                  </SaveButton>
+                  <CloseButton
+                    src={cross}
+                    onClick={(e: React.MouseEvent<HTMLImageElement>) => {
+                      e.stopPropagation();
+                      setIsChangedCard(false);
+                    }}
+                  />
+                </ButtonsWrapper>
+              </TextAreaWrapper>
+            </form>
+          )}
+        />
+      ) : (
+        <CardListItemTitle>{props.card.title}</CardListItemTitle>
+      )}
+      <CardBottom>
+        <CommentImage src={commentImage} />
+        <CommentCount>{comments.length}</CommentCount>
+      </CardBottom>
+    </CardListItem>
+  );
+}
+
 const CardListItem = styled.div`
   background-color: white;
   border-radius: 10px;
@@ -120,128 +232,47 @@ const CloseButton = styled.img`
 `;
 
 const TextAreaWrapper = styled.div``;
-const SaveButton = styled.button` width: 100%;
-height: 40px;
-max-width: 125px;
-justify-content: center;
-align-items: center;
-border: none;
-border-radius: 12px;
-background-color: #0b97dc; !important;
-font-family: 'Comfortaa', cursive;
-font-weight: bold;
-font-size:12px;
-color: white;
-padding: 5px;
-cursor: default;
--webkit-touch-callout: none; /* iOS Safari */
--webkit-user-select: none; /* Chrome/Safari/Opera */
--khtml-user-select: none; /* Konqueror */
--moz-user-select: none; /* Firefox */
--ms-user-select: none; /* Internet Explorer/Edge */
-user-select: none;
-margin-right: 5px;
-&:hover {
-background-color:#0a85c2;
-}
-&:active {
-  box-shadow: 0px 4px 8px rgba(darken(dodgerblue, 30%));
-  transform: scale(0.98);
-}`;
-type CardProps = {
-  card: CardType;
-  selectCardHandler?: (id: string) => void;
-  deleteCardHandler?: (id: string) => void;
-  setCardName?: (title: string) => void;
-};
-
-function Card(props: CardProps) {
-  const [isChangedCard, setIsChangedCard] = useState<boolean>(false);
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-  type FormType = {
-    title?: string;
-  };
-  function resize(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    setTimeout(function () {
-      textAreaRef.current!.style.cssText = 'height:auto; padding:1';
-      textAreaRef.current!.style.cssText = 'height:' + textAreaRef.current!.scrollHeight + 'px';
-    }, 1);
+const SaveButton = styled.button`
+  width: 100%;
+  height: 40px;
+  max-width: 125px;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 12px;
+  background-color: #0b97dc;
+  font-family: 'Comfortaa', cursive;
+  font-weight: bold;
+  font-size: 12px;
+  color: white;
+  padding: 5px;
+  cursor: default;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Chrome/Safari/Opera */
+  -khtml-user-select: none; /* Konqueror */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none;
+  margin-right: 5px;
+  &:hover {
+    background-color: #0a85c2;
   }
-  const onSubmit = (e: FormType) => {
-    props.setCardName!(e.title!);
-  };
+  &:active {
+    box-shadow: 0px 4px 8px rgba(darken(dodgerblue, 30%));
+    transform: scale(0.98);
+  }
+`;
 
-  const validate = (e: FormType) => {
-    const errors: FormType = {};
-    if (e.title && e.title.length < 5) errors.title = 'Too short';
-
-    return errors;
-  };
-  return (
-    <CardListItem onClick={() => props.selectCardHandler!(props.card.id)}>
-      <EditButtonWrapper onClick={() => setIsChangedCard(true)}>
-        <EditButton src={pencil} />
-      </EditButtonWrapper>
-      <DeleteButtonWrapper
-        onClick={(e) => {
-          e.stopPropagation();
-          props.deleteCardHandler!(props.card.id);
-        }}
-      >
-        <DeleteButton src={dell} />
-      </DeleteButtonWrapper>
-      {isChangedCard ? (
-        <Form
-          onSubmit={onSubmit}
-          validate={validate}
-          render={({ handleSubmit }) => (
-            <form onSubmit={handleSubmit}>
-              <TextAreaWrapper>
-                <Field
-                  name="title"
-                  render={({ input, meta }) => (
-                    <>
-                      {meta.touched && meta.error && (
-                        <span className="error-message">{meta.error}</span>
-                      )}
-                      <CardTitleTextArea
-                        ref={textAreaRef}
-                        onKeyPress={resize}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={input.onChange}
-                        value={input.value}
-                        rows={1}
-                      />
-                    </>
-                  )}
-                />
-                <ButtonsWrapper>
-                  <SaveButton type="submit">Save title</SaveButton>
-                  <CloseButton src={cross} onClick={() => setIsChangedCard(false)} />
-                </ButtonsWrapper>
-              </TextAreaWrapper>
-            </form>
-          )}
-        />
-      ) : (
-        <CardListItemTitle>{props.card.title}</CardListItemTitle>
-      )}
-      <CardBottom>
-        <CommentImage src={commentImage} />
-        <CommentCount>{props.card.comments.length}</CommentCount>
-      </CardBottom>
-    </CardListItem>
-  );
-}
 const mapDispatchToProps = (dispatch: (action: ActionType) => void) => {
   return {
-    selectCardHandler: (id: string) => {
-      dispatch(setCurrentCard(id));
+    selectCardHandler: (cardId: string, columnId: string) => {
+      dispatch(setCurrentCard({ cardId, columnId }));
     },
-    deleteCardHandler: (id: string) => {
-      console.log('delete ', id);
+    deleteCardHandler: (cardId: string) => {
+      dispatch(deleteCard({ cardId }));
     },
-    setCardName: (title: string) => {
+    setCardName: (id: string, title: string) => {
+      dispatch(setCardName({ id, title }));
       console.log('setCardName', title);
     },
   };

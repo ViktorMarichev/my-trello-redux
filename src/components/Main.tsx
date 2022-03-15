@@ -25,7 +25,7 @@ function Main(props: MainProps) {
   return (
     <StyledMain>
       {props.columns!.map((elem: ColumnType) => {
-        return <Column key={elem.id} id={elem.id} cardsIds={elem.cards} title={elem.title} />;
+        return <Column key={elem.id} id={elem.id} title={elem.title} />;
       })}
     </StyledMain>
   );

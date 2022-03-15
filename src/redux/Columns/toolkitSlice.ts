@@ -20,12 +20,6 @@ const ColumnsSlice = createSlice({
     { id: '3', title: 'Done', cards: [] },
   ],
   reducers: {
-    addCard(state: Array<Column>, action) {
-      const cardId: string = stateTool.generateId(state)!;
-      state[_.findIndex(state, { id: action.payload.columnId })].cards.push(cardId);
-      console.log(state[_.findIndex(state, { id: action.payload.columnId })].cards);
-      action.payload.cardId = cardId;
-    },
   },
 });
 

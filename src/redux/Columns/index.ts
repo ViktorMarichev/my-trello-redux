@@ -1,4 +1,4 @@
 import reducer, { actions } from './toolkitSlice';
-export const { addCard } = actions;
+export const { } = actions;
 export { default as ColumnSelectors } from './selectors';
 export default reducer;

@@ -2,6 +2,22 @@ import React from 'react';
 import styled from 'styled-components';
 import Container from './Container';
 import img from '../img/face.png';
+
+type HeaderProps = {
+  title: string;
+};
+const Header = (props: HeaderProps) => {
+  return (
+    <StyledHeader>
+      <HeaderContainer>
+        <LogoWrapper>
+          <LogoText>{props.title}</LogoText>
+          <LogoImg src={img} />
+        </LogoWrapper>
+      </HeaderContainer>
+    </StyledHeader>
+  );
+};
 const StyledHeader = styled.header`
   width: 100%;
   padding: 10px;
@@ -31,19 +47,4 @@ const LogoImg = styled.img`
   width: 30px;
   height: 30px;
 `;
-type HeaderProps = {
-  title: string;
-};
-const Header = (props: HeaderProps) => {
-  return (
-    <StyledHeader>
-      <HeaderContainer>
-        <LogoWrapper>
-          <LogoText>{props.title}</LogoText>
-          <LogoImg src={img} />
-        </LogoWrapper>
-      </HeaderContainer>
-    </StyledHeader>
-  );
-};
 export default Header;

@@ -1,11 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
-
+import { currentCard as currentCardType } from '../../types/tasks';
 const CurrentCardSlice = createSlice({
   name: 'CurrentCardSlice',
-  initialState: null,
+  initialState: {
+    cardId: null,
+    columnId: null,
+  },
   reducers: {
-    setCurrentCard(state: any, action) {
-      state = action.payload;
+    setCurrentCard(state: currentCardType, action) {
+      console.log('set in reducer');
+      state.cardId = action.payload.cardId;
+      state.columnId = action.payload.columnId;
     },
   },
 });

@@ -23,11 +23,7 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "prettier"
-  ],
+  "plugins": ["react", "@typescript-eslint", "prettier"],
   "rules": {
     "require-jsdoc": "off",
     "@typescript-eslint/ban-ts-comment": "off",
@@ -35,10 +31,7 @@
     "prettier/prettier": [
       "error",
       {
-        "endOfLine": "auto",
-        "singleQuote": true,
-        "semi": false,
-        "trailingComma": "none"
+        "endOfLine": "auto"
       }
     ],
     "@typescript-eslint/no-var-requires": 0,

@@ -1,23 +1,27 @@
 export type Column = {
   id: string;
   title: string;
-  cards: Array<string>;
 };
 
 export type Card = {
   id: string;
+  columnId: string;
   title: string;
   description: '';
   author: string;
-  comments: Array<string>;
 };
 
 export type Comment = {
   id: string;
-  title: string;
+  cardId: string;
+  message: string;
   date: Date;
   user: string;
 };
 export type User = {
   username: string;
+};
+export type currentCard = {
+  cardId: null | string,
+  columnId: null | string,
 };

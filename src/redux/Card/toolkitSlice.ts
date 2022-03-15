@@ -1,27 +1,37 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { Card as CardType } from '../../types/tasks';
-import { addCard as addCardId } from '../Columns/index';
+import { stateTool } from '../index';
+const _ = require('lodash');
 
 const ColumnsSlice = createSlice({
   name: 'CardSlice',
   initialState: [],
   reducers: {
-    addCard(state: Array<CardType>, action) {
-      alert('here');
-      state.push(action.payload! as CardType);
+    setCardName(state: Array<CardType>, action) {
+      state[_.findIndex(state, (card: CardType) => card.id === action.payload.id)]
+        .title = action.payload.title;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(addCardId, (state: any, action) => {
-      console.log(action);
+    setCardDescription(state: Array<CardType>, action) {
+      state[_.findIndex(state, (card: CardType) => card.id === action.payload.id)]
+        .description = action.payload.description;
+    },
+    addCard(state: Array<CardType>, action) {
+      const cardId = stateTool.generateId(state);
       state.push({
-        id: action.payload.cardId,
+        id: cardId,
+        columnId: action.payload.columnId,
         title: action.payload.title,
         author: action.payload.author,
-        description: '',
-        comments: [],
+        description: ''
       } as CardType);
-    });
+    },
+    deleteCard(state: Array<CardType>, action) {
+      console.log('deleteCardACTION', action.payload.cardId);
+      return state = _.filter(state, (card: CardType) => {
+        return card.id !== action.payload.cardId
+      });
+
+    },
   },
 });
 
